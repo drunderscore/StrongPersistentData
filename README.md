@@ -25,9 +25,11 @@ final var strongPersistentData = new StrongPersistentData(this);
   <summary>TestType.java</summary>
 
 ```java
-package xyz.jame.strongpersistentdata;
-
 import org.bukkit.Location;
+import xyz.jame.strongpersistentdata.ExplicitName;
+import xyz.jame.strongpersistentdata.ExplicitType;
+import xyz.jame.strongpersistentdata.NullAction;
+import xyz.jame.strongpersistentdata.Wrap;
 
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -84,7 +86,7 @@ public interface TestType
     // This will correspond to the key "myplugin:better_health"
     void betterHealth(int value);
 
-    // This is a remover. It starts with "remove", has a void return type, and zero parameters.
+    // This is a remover. It starts with "remove", has a void return value, and zero parameters.
     // This will remove the key from the container.
     // This will correspond to the key "myplugin:better_health"
     void removeBetterHealth();
@@ -144,6 +146,20 @@ public interface TestType
     // This will correspond to the key "myplugin:player_owner"
     @NullAction(NullAction.Rule.Remove)
     void playerOwner(String value);
+
+    // This is a wrapped getter.
+    // The type at the key is expected to be a container, and will automatically be wrapped to match the
+    // return value.
+    // This will correspond to the key "myplugin:tootsie_roll_wrapper"
+    @Wrap
+    TestType tootsieRollWrapper();
+
+    // This is a wrapped setter.
+    // The parameter should be a wrapped type, which will automatically be unwrapped (taking its underlying container),
+    // and set it into this container at the key.
+    // This will correspond to the key "myplugin:tootsie_roll_wrapper"
+    @Wrap
+    void tootsieRollWrapper(TestType value);
 }
 ```
 </details>
