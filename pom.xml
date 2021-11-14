@@ -6,7 +6,7 @@
 
     <groupId>xyz.jame.strongpersistentdata</groupId>
     <artifactId>StrongPersistentData</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <developers>
         <developer>
             <name>James Puleo</name>
