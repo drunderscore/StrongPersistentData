@@ -81,12 +81,37 @@ class PersistentDataContainerProxy implements InvocationHandler
 
         if (isHasMethod)
         {
-            if (explicitTypeAnnotation == null)
-                throw new IllegalStateException("Has method is not annotated with @ExplicitType");
+            Class<?> type;
 
-            var persistentType = strongPersistentData.persistentDataTypes.get(explicitTypeAnnotation.value());
+            // If we are annotated with @ExplicitType, then it's super easy to know our type
+            if (explicitTypeAnnotation != null)
+                type = explicitTypeAnnotation.value();
+            else
+            {
+                // Otherwise, we can _try_ to deduce it by finding its setter method.
+                Method maybeSetter = null;
+
+                for (var m : proxy.getClass().getMethods())
+                {
+                    if (m.getName().equals(effectiveMethodName) && m.getReturnType() == Void.TYPE && m.getParameterCount() == 1)
+                    {
+                        maybeSetter = m;
+                        break;
+                    }
+                }
+
+                if (maybeSetter == null)
+                    throw new IllegalStateException("Couldn't deduce type for has method");
+
+                type = maybeSetter.getParameters()[0].getType();
+            }
+
+            // Let's not try to deduce based on its getter method. It might be an Optional (or specialized), and
+            // it's not worth trying to distinguish
+
+            var persistentType = strongPersistentData.persistentDataTypes.get(type);
             if (persistentType == null)
-                throw createNoPersistentTypeException(method.getName(), explicitTypeAnnotation.value());
+                throw createNoPersistentTypeException(method.getName(), type);
 
             return container.has(key, persistentType);
         }

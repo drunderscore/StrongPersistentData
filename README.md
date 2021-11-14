@@ -69,9 +69,8 @@ public interface TestType
 
     // This is a has method. It starts with "has", has a primitive boolean return value, and zero parameters.
     // This will check the existence of the key, returning true if it exists, and false otherwise.
-    // A has method _MUST_ be annotated with @ExplicitType.
+    // If this has no setter, this method _MUST_ be annotated with @ExplicitType.
     // This will correspond to the key "myplugin:health"
-    @ExplicitType(int.class)
     boolean hasHealth();
 
     // This is a specialized Optional getter.
