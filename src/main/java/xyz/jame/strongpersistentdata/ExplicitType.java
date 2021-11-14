@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  *
  * <li>
  * If the method is a has method (starts with "has", return type {@link Boolean#TYPE}, zero parameters),
- * this will define the expected type that should be there.
+ * this will define the expected type that should be there, rather than attempting to deduce it from  it's setter.
  * </li>
  *
  * <li>
