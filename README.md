@@ -152,5 +152,4 @@ public interface TestType
 * Better caching
   * Once we execute a method, we shouldn't have to deduce and construct it's key
   (and a ton of other stuff) again.
-* Container and container array types
-  * We should be able to re-wrap these on-demand. Not sure about the array...
+* Container arrays

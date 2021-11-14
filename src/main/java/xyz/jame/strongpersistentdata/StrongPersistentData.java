@@ -50,7 +50,9 @@ public class StrongPersistentData
         persistentDataTypes.put(Integer[].class, PersistentDataType.INTEGER_ARRAY);
         persistentDataTypes.put(Long[].class, PersistentDataType.LONG_ARRAY);
 
-        // TODO: Tag container and tag container array
+        // Direct containers
+        persistentDataTypes.put(PersistentDataContainer.class, PersistentDataType.TAG_CONTAINER);
+        persistentDataTypes.put(PersistentDataContainer[].class, PersistentDataType.TAG_CONTAINER_ARRAY);
     }
 
     /**

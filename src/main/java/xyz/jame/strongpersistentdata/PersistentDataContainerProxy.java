@@ -6,6 +6,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -56,6 +57,7 @@ class PersistentDataContainerProxy implements InvocationHandler
         boolean isHasMethod = method.getName().startsWith("has") && method.getReturnType() == Boolean.TYPE && method.getParameterCount() == 0;
         var explicitNameAnnotation = method.getAnnotation(ExplicitName.class);
         var explicitTypeAnnotation = method.getAnnotation(ExplicitType.class);
+        var shouldWrap = method.getAnnotation(Wrap.class) != null;
 
         if (isRemoveMethod)
             effectiveMethodName = Character.toLowerCase(method.getName().charAt(6)) + method.getName().substring(7);
@@ -101,6 +103,21 @@ class PersistentDataContainerProxy implements InvocationHandler
             if (nullActionAnnotation != null && nullActionAnnotation.value() == NullAction.Rule.Remove && args[0] == null)
             {
                 container.remove(key);
+                return null;
+            }
+
+            if (shouldWrap)
+            {
+                if (!Proxy.isProxyClass(args[0].getClass()))
+                    throw new IllegalStateException("Non-proxy object passed to @Wrap setter");
+
+                var proxyObject = Proxy.getInvocationHandler(args[0]);
+                if (!(proxyObject instanceof PersistentDataContainerProxy))
+                    throw new IllegalStateException("Incorrect Proxy object passed to @Wrap setter");
+
+                var containerProxyObject = (PersistentDataContainerProxy) proxyObject;
+                container.set(key, PersistentDataType.TAG_CONTAINER, containerProxyObject.container);
+
                 return null;
             }
 
@@ -173,11 +190,30 @@ class PersistentDataContainerProxy implements InvocationHandler
                     optionalParameterizedType = maybeSetter.getParameters()[0].getType();
                 }
 
+                if (shouldWrap)
+                {
+                    // TODO: container array
+                    var value = container.get(key, PersistentDataType.TAG_CONTAINER);
+                    if (value == null)
+                        return Optional.empty();
+
+                    return Optional.of(strongPersistentData.wrap(value, optionalParameterizedType));
+                }
+
                 var persistentType = strongPersistentData.persistentDataTypes.get(optionalParameterizedType);
                 if (persistentType == null)
                     throw createNoPersistentTypeException(method.getName(), optionalParameterizedType);
 
                 return Optional.ofNullable(container.get(key, persistentType));
+            }
+
+            if (shouldWrap)
+            {
+                var value = container.get(key, PersistentDataType.TAG_CONTAINER);
+                if (value == null)
+                    return null;
+
+                return strongPersistentData.wrap(value, type);
             }
 
             var persistentType = strongPersistentData.persistentDataTypes.get(type);
