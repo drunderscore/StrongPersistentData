@@ -247,8 +247,45 @@ class PersistentDataContainerProxy implements InvocationHandler
 
             var value = container.get(key, persistentType);
 
-            if (type.isPrimitive() && value == null)
-                throw new IllegalStateException("Getter with primitive type cannot return null");
+            if (value == null)
+            {
+                if (type == Byte.TYPE || type == Short.TYPE || type == Integer.TYPE || type == Long.TYPE)
+                {
+                    var defaultValueAnnotation = method.getAnnotation(DefaultValue.Numeric.class);
+                    if (defaultValueAnnotation != null)
+                    {
+                        if (type == Byte.TYPE)
+                            return (byte) defaultValueAnnotation.value();
+                        if (type == Short.TYPE)
+                            return (short) defaultValueAnnotation.value();
+                        if (type == Integer.TYPE)
+                            return (int) defaultValueAnnotation.value();
+                        if (type == Long.TYPE)
+                            return defaultValueAnnotation.value();
+                    }
+                }
+                else if (type == Float.TYPE || type == Double.TYPE)
+                {
+                    var defaultValueAnnotation = method.getAnnotation(DefaultValue.NumericFloating.class);
+                    if (defaultValueAnnotation != null)
+                    {
+                        if (type == Float.TYPE)
+                            return (float) defaultValueAnnotation.value();
+                        if (type == Double.TYPE)
+                            return defaultValueAnnotation.value();
+
+                    }
+                }
+                else if (type == String.class)
+                {
+                    var defaultValueAnnotation = method.getAnnotation(DefaultValue.String.class);
+                    if (defaultValueAnnotation != null)
+                        return defaultValueAnnotation.value();
+                }
+
+                if (type.isPrimitive())
+                    throw new IllegalStateException("Getter with primitive type cannot return null");
+            }
 
             return value;
         }
